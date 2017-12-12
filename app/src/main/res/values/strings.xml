@@ -1,4 +1,9 @@
 <resources>
-    <string name="app_name">AppEmailScreenshot</string>
+    <string name="app_name">Email Screenshot</string>
     <string name="action_settings">Settings</string>
+    <string name="email_send_msg">There was a problem with sending an email!</string>
+    <string name="email_subject">Attention: Bug found!!!</string>
+    <string name="email_body_text">You can find The details about error in attachment!</string>
+    <string name="email_choose_title">Send email...</string>
+    <string name="take_screenshot_msg">Click on the floating button with \'Email\' \nicon  to select a screenshot and email it</string>
 </resources>

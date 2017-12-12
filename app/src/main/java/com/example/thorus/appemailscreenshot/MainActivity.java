@@ -1,7 +1,6 @@
 package com.example.thorus.appemailscreenshot;
 
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
@@ -18,23 +17,30 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
     private static int REQUEST_CODE_GALLERY = 10;
-    private Bitmap thumbnail = null;
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
+    @BindView(R.id.toolbar)
+    Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        // Bind views
+        ButterKnife.bind(this);
+
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -71,42 +77,23 @@ public class MainActivity extends AppCompatActivity {
             if (data != null) {
 
                 Uri selectedImage = data.getData();
-                String[] filePathColumn = { MediaStore.Images.Media.DATA };
-                Cursor cursor = getContentResolver().query(selectedImage,filePathColumn, null, null, null);
+                String[] filePathColumn = {MediaStore.Images.Media.DATA};
+                Cursor cursor = getContentResolver().query(selectedImage, filePathColumn, null, null, null);
                 cursor.moveToFirst();
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 String picturePath = cursor.getString(columnIndex);
                 cursor.close();
-                thumbnail = (BitmapFactory.decodeFile(picturePath));
-
-                File bitmapFile = new File(Environment.getExternalStorageDirectory()+
-                        "/"+selectedImage+"/picture.jpg");
-
-
+                  // send Email right away
                 sendEmail(this, picturePath);
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public Uri getImageUri(Context inContext, Bitmap inImage) {
-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-        inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
-        String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
-        return Uri.parse(path);
-    }
-
-    public String getRealPathFromURI(Uri uri) {
-        Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-        cursor.moveToFirst();
-        int idx = cursor.getColumnIndex(MediaStore.Images.ImageColumns.DATA);
-        return cursor.getString(idx);
-    }
-
     /**
-     * Odpre galerijo za podan ContentType (prikaže vse galerije)
+     * Opens Gallery for specified
      *
-     * @param activity
+     * @param activity context that is needed to open intent
      */
     public void openGallery(Activity activity) {
         try {
@@ -125,12 +112,17 @@ public class MainActivity extends AppCompatActivity {
 
             intent.setDataAndType(uri, "image/*");
             activity.startActivityForResult(intent, REQUEST_CODE_GALLERY);
-
         } catch (Exception e) {
             Log.e("openGallery", e.getMessage());
         }
     }
 
+    /**
+     * Sends an email with "image" attachment
+     *
+     * @param activity context
+     * @param filePath file path in string
+     */
     public void sendEmail(Activity activity, String filePath) {
         try {
             Intent emailIntent = new Intent(Intent.ACTION_SEND);
@@ -140,14 +132,15 @@ public class MainActivity extends AppCompatActivity {
             emailIntent.putExtra(Intent.EXTRA_EMAIL, to);
             // the attachment
             File file = new File(filePath);
-            emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://"+file.getAbsolutePath()));
+            emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + file.getAbsolutePath()));
             // the mail subject
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Attention: Bug found!!!");
+            emailIntent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.email_subject));
             emailIntent.putExtra(android.content.Intent.EXTRA_TEXT,
-                    "The details about error you can find in attachment!");
-            startActivity(Intent.createChooser(emailIntent, "Send email..."));
+                    getString(R.string.email_body_text));
+            startActivity(Intent.createChooser(emailIntent, getString(R.string.email_choose_title)));
         } catch (Exception e) {
             Log.e("openGallery", e.getMessage());
+            Toast.makeText(activity, R.string.email_send_msg, Toast.LENGTH_SHORT).show();
         }
     }
 }
