@@ -5,5 +5,5 @@
     <string name="email_subject">Attention: Bug found!!!</string>
     <string name="email_body_text">You can find The details about error in attachment!</string>
     <string name="email_choose_title">Send email...</string>
-    <string name="take_screenshot_msg">Click on the floating button with \'Email\' \nicon  to select a screenshot and email it</string>
+    <string name="take_screenshot_msg">Click on the floating button with \'Email\' icon\nto select a screenshot and email it!</string>
 </resources>
